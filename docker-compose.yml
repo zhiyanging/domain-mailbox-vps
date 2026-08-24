@@ -1,0 +1,56 @@
+services:
+  app:
+    build: .
+    image: domain-mailbox-vps:local
+    container_name: domain-mailbox-app
+    restart: unless-stopped
+    env_file: .env
+    read_only: true
+    ports:
+      - "0.0.0.0:25:2525"
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config:ro
+      - ./caddy-data:/caddy-data:ro
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    networks: [mailbox]
+    mem_limit: 448m
+    cpus: 0.85
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    healthcheck:
+      test: ["CMD", "node", "scripts/internal-healthcheck.mjs"]
+      interval: 30s
+      timeout: 8s
+      retries: 4
+      start_period: 30s
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: domain-mailbox-caddy
+    restart: unless-stopped
+    env_file: .env
+    user: "1000:1000"
+    ports:
+      - "0.0.0.0:80:8080"
+      - "0.0.0.0:443:8443"
+    volumes:
+      - ./generated/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy-data:/data
+      - ./caddy-config:/config
+    networks: [mailbox]
+    mem_limit: 128m
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+networks:
+  mailbox:
+    driver: bridge

@@ -1,0 +1,17 @@
+.env
+config/domains.json
+config/domains.*.bak
+config/cloudflare-ips.json
+generated/
+generated/config-backups/
+data/
+data.before-restore-*/
+backups/
+caddy-data/
+caddy-config/
+node_modules/
+.npm-cache/
+npm-debug.log*
+*.tar.gz
+*.log
+.tmp/

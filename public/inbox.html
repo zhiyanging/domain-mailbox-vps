@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>专属收件箱</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">@</div><div><p class="eyebrow">Private inbox</p><h1>专属收件箱</h1><div id="inboxAddress" class="muted"></div></div></div>
+      <div class="row"><span class="status-pill"><span class="status-dot"></span>仅收件</span><button id="refreshInbox" class="btn">刷新</button></div>
+    </header>
+    <section class="panel mail-layout">
+      <aside class="mail-list">
+        <div class="mail-list-head"><strong>邮件</strong><div id="mailCount" class="muted"></div></div>
+        <div id="mailItems" class="mail-items"><div class="empty">正在加载…</div></div>
+      </aside>
+      <article class="mail-view">
+        <div class="mail-view-head"><strong id="mailSubject">选择一封邮件</strong><div id="mailMeta" class="muted"></div></div>
+        <div id="mailContent" class="mail-content"><div class="empty">邮件、附件和原始 EML 将完整显示在这里。</div></div>
+      </article>
+    </section>
+    <div id="inboxFlash" class="flash"></div>
+  </main>
+  <script type="module" src="/assets/inbox.js"></script>
+</body>
+</html>

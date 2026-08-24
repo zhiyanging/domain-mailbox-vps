@@ -1,0 +1,13 @@
+.git
+.env
+config/domains.json
+config/cloudflare-ips.json
+generated/
+data
+backups
+caddy-data
+caddy-config
+node_modules
+.npm-cache
+test
+*.tar.gz

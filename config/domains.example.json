@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "default_domain": "example.com",
+  "shared_mx_host": "mx.example.com",
+  "control_host": "manage.example.com",
+  "landing": {
+    "title": "Digital Infrastructure",
+    "headline": "Reliable digital infrastructure for modern teams.",
+    "description": "Secure, resilient services designed for dependable digital operations."
+  },
+  "domains": [
+    {
+      "domain": "example.com",
+      "inbox_host": "inbox.example.com",
+      "public_hosts": ["example.com", "www.example.com"],
+      "enabled": true
+    },
+    {
+      "domain": "example.net",
+      "inbox_host": "inbox.example.net",
+      "public_hosts": ["example.net", "www.example.net"],
+      "enabled": true
+    }
+  ]
+}

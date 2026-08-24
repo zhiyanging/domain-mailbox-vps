@@ -1,0 +1,29 @@
+{
+  "name": "domain-mailbox-vps",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Self-hosted receive-only domain mailbox with tokenized inbox links",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "cli": "node src/cli.js",
+    "test": "node test/run.js",
+    "check": "node --check src/index.js && node --check src/app.js && node --check src/smtp.js",
+    "scan-release": "node scripts/scan-release.mjs ."
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "better-sqlite3": "13.0.3",
+    "express": "5.2.1",
+    "mailparser": "3.9.15",
+    "sanitize-html": "2.17.7",
+    "smtp-server": "3.19.3",
+    "swagger-ui-dist": "5.29.5"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.0"
+  }
+}

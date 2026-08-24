@@ -1,0 +1,234 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Receive-only Mailbox Integration API",
+    "version": "2.0.0",
+    "description": "Stable integration endpoints for creating private receive-only inboxes and retrieving their messages. Interactive submission is disabled on this public reference.",
+    "license": { "name": "Proprietary", "identifier": "LicenseRef-Proprietary" }
+  },
+  "servers": [{ "url": "/" }],
+  "tags": [
+    { "name": "Service", "description": "Read-only service readiness information." },
+    { "name": "Domains", "description": "Configured mail-domain registry." },
+    { "name": "Mailboxes", "description": "Mailbox creation, listing, state, and token rotation." },
+    { "name": "Messages", "description": "Permanent raw-message and attachment retrieval." }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Service"],
+        "summary": "Read service health",
+        "operationId": "getHealth",
+        "security": [],
+        "responses": {
+          "200": { "description": "Service is ready", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } } },
+          "421": { "$ref": "#/components/responses/UnknownHost" },
+          "503": { "$ref": "#/components/responses/ServiceUnavailable" }
+        }
+      }
+    },
+    "/v1/domains": {
+      "get": {
+        "tags": ["Domains"],
+        "summary": "List configured mail domains",
+        "operationId": "listDomains",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Domain registry", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DomainList" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/v1/mailboxes/batch": {
+      "post": {
+        "tags": ["Mailboxes"],
+        "summary": "Create up to 500 mailboxes",
+        "operationId": "createMailboxBatch",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BatchCreateRequest" } } } },
+        "responses": {
+          "201": { "description": "Created mailboxes; tokens are returned once", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/BatchCreateResponse" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/v1/mailboxes": {
+      "get": {
+        "tags": ["Mailboxes"],
+        "summary": "List and filter mailboxes",
+        "operationId": "listMailboxes",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "domain", "in": "query", "schema": { "type": "string", "format": "hostname" } }
+        ],
+        "responses": {
+          "200": { "description": "Mailbox page", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MailboxList" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Mailboxes"],
+        "summary": "Create one mailbox",
+        "operationId": "createMailbox",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateMailboxRequest" } } } },
+        "responses": {
+          "201": { "description": "Created mailbox; token is returned once", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IssuedMailbox" } } } },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/v1/mailboxes/{address}": {
+      "patch": {
+        "tags": ["Mailboxes"],
+        "summary": "Enable or disable a mailbox",
+        "operationId": "updateMailbox",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Address" }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "type": "object", "required": ["enabled"], "properties": { "enabled": { "type": "boolean" } } } } } },
+        "responses": {
+          "200": { "description": "Updated mailbox" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/mailboxes/{address}/rotate-token": {
+      "post": {
+        "tags": ["Mailboxes"],
+        "summary": "Rotate a mailbox access token",
+        "operationId": "rotateMailboxToken",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "$ref": "#/components/parameters/Address" }],
+        "responses": {
+          "200": { "description": "New token and inbox URL", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IssuedMailbox" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/messages": {
+      "get": {
+        "tags": ["Messages"],
+        "summary": "List messages for one mailbox",
+        "operationId": "listMailboxMessages",
+        "description": "Accepts either the administrator token or the mailbox token.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "address", "in": "query", "required": true, "schema": { "type": "string", "format": "email" } },
+          { "$ref": "#/components/parameters/Limit" },
+          { "$ref": "#/components/parameters/Offset" }
+        ],
+        "responses": {
+          "200": { "description": "Message page", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MessageList" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/messages/{id}/raw": {
+      "get": {
+        "tags": ["Messages"],
+        "summary": "Download an original EML",
+        "operationId": "downloadRawMessage",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/MessageId" },
+          { "name": "address", "in": "query", "required": true, "schema": { "type": "string", "format": "email" } }
+        ],
+        "responses": {
+          "200": { "description": "Original RFC 822 message", "content": { "message/rfc822": { "schema": { "type": "string", "contentEncoding": "binary" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/messages/{id}/attachments/{index}": {
+      "get": {
+        "tags": ["Messages"],
+        "summary": "Download one attachment",
+        "operationId": "downloadMessageAttachment",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "$ref": "#/components/parameters/MessageId" },
+          { "name": "index", "in": "path", "required": true, "schema": { "type": "integer", "minimum": 0 } },
+          { "name": "address", "in": "query", "required": true, "schema": { "type": "string", "format": "email" } }
+        ],
+        "responses": {
+          "200": { "description": "Attachment bytes" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "bearerFormat": "opaque token" }
+    },
+    "parameters": {
+      "Limit": { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 1000, "default": 100 } },
+      "Offset": { "name": "offset", "in": "query", "schema": { "type": "integer", "minimum": 0, "default": 0 } },
+      "Address": { "name": "address", "in": "path", "required": true, "schema": { "type": "string", "format": "email" } },
+      "MessageId": { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+    },
+    "schemas": {
+      "Error": { "type": "object", "required": ["error"], "properties": { "error": { "type": "string" } } },
+      "Health": {
+        "type": "object",
+        "required": ["ok", "service", "domain", "domain_count", "receiveOnly"],
+        "properties": {
+          "ok": { "type": "boolean" },
+          "service": { "type": "string" },
+          "domain": { "type": "string", "format": "hostname", "description": "Default mail domain" },
+          "domain_count": { "type": "integer" },
+          "receiveOnly": { "type": "boolean", "const": true },
+          "adminReady": { "type": "boolean" },
+          "smtp": { "type": "object", "properties": { "ready": { "type": "boolean" }, "tls": { "type": "boolean" } } }
+        }
+      },
+      "Domain": {
+        "type": "object",
+        "required": ["domain", "inbox_host", "enabled", "default"],
+        "properties": {
+          "domain": { "type": "string", "format": "hostname" },
+          "inbox_host": { "type": "string", "format": "hostname" },
+          "enabled": { "type": "boolean" },
+          "default": { "type": "boolean" }
+        }
+      },
+      "DomainList": { "type": "object", "required": ["items", "count"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/Domain" } }, "count": { "type": "integer" } } },
+      "CreateMailboxRequest": { "type": "object", "required": ["local_part"], "properties": { "local_part": { "type": "string", "minLength": 1, "maxLength": 48 }, "domain": { "type": "string", "format": "hostname" } } },
+      "BatchCreateRequest": { "type": "object", "required": ["count"], "properties": { "count": { "type": "integer", "minimum": 1, "maximum": 500 }, "local_part": { "type": "string" }, "domain": { "type": "string", "format": "hostname" } } },
+      "IssuedMailbox": {
+        "type": "object",
+        "required": ["address", "token", "inbox_url"],
+        "properties": {
+          "address": { "type": "string", "format": "email", "examples": ["sample@domain.example"] },
+          "token": { "type": "string", "description": "Shown once" },
+          "inbox_url": { "type": "string", "format": "uri", "examples": ["https://inbox.domain.example/cf-inbox/TOKEN/sample%40domain.example"] }
+        }
+      },
+      "BatchCreateResponse": { "type": "object", "required": ["items", "count"], "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/IssuedMailbox" } }, "count": { "type": "integer" } } },
+      "Mailbox": { "type": "object", "properties": { "address": { "type": "string", "format": "email" }, "domain": { "type": "string", "format": "hostname" }, "enabled": { "type": "boolean" }, "message_count": { "type": "integer" }, "stored_bytes": { "type": "integer" } } },
+      "MailboxList": { "type": "object", "properties": { "items": { "type": "array", "items": { "$ref": "#/components/schemas/Mailbox" } }, "count": { "type": "integer" }, "limit": { "type": "integer" }, "offset": { "type": "integer" } } },
+      "Message": { "type": "object", "properties": { "id": { "type": "string" }, "message_id": { "type": ["string", "null"] }, "source": { "type": "string" }, "address": { "type": "string", "format": "email" }, "raw": { "type": "string" }, "raw_size": { "type": "integer" }, "created_at": { "type": "string", "format": "date-time" } } },
+      "MessageList": { "type": "object", "properties": { "results": { "type": "array", "items": { "$ref": "#/components/schemas/Message" } }, "count": { "type": "integer" }, "limit": { "type": "integer" }, "offset": { "type": "integer" } } }
+    },
+    "responses": {
+      "BadRequest": { "description": "Invalid request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "Unauthorized": { "description": "Missing or invalid token", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "NotFound": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "Conflict": { "description": "Mailbox already exists", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "UnknownHost": { "description": "Host is not registered", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+      "ServiceUnavailable": { "description": "Service is not ready", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } } }
+    }
+  }
+}

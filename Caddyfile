@@ -1,0 +1,9 @@
+# Reference only. Production uses generated/Caddyfile, created from
+# config/domains.json by scripts/domainctl.sh.
+{
+  admin off
+}
+
+:8080 {
+  respond "run scripts/domainctl.sh render" 503
+}

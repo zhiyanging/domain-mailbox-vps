@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Domain Mailbox Admin</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <section id="loginPanel" class="panel login-panel">
+      <p class="eyebrow">Receive-only infrastructure</p>
+      <h1>邮箱管理员</h1>
+      <p class="muted">唯一管理员入口。服务不提供公开注册或发信功能。</p>
+      <form id="loginForm" class="stack">
+        <label>管理员用户名<input id="loginUsername" autocomplete="username" value="admin" required></label>
+        <label>管理员密码<input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <button class="btn primary" type="submit">登录管理台</button>
+      </form>
+      <div id="loginFlash" class="flash"></div>
+    </section>
+
+    <section id="adminApp" class="hidden">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">M</div>
+          <div><p class="eyebrow">Domain Mailbox</p><h1 id="pageTitle">仅收件管理台</h1><div id="domainLabel" class="muted"></div></div>
+        </div>
+        <div class="row"><label class="inline-field">当前域名<select id="domainSelect"></select></label><span class="status-pill"><span class="status-dot"></span><span id="serviceState">运行中</span></span><button id="logoutButton" class="btn small">退出</button></div>
+      </header>
+
+      <div class="grid cards">
+        <section class="panel"><div id="mailboxTotal" class="card-value">—</div><div class="card-label">邮箱总数</div></section>
+        <section class="panel"><div id="mailboxEnabled" class="card-value">—</div><div class="card-label">正在收件</div></section>
+        <section class="panel"><div id="messageTotal" class="card-value">—</div><div class="card-label">永久邮件</div></section>
+        <section class="panel"><div id="diskUsage" class="card-value">—</div><div class="card-label">磁盘使用率</div></section>
+      </div>
+
+      <div class="grid two section">
+        <section class="panel">
+          <h2>批量随机邮箱</h2>
+          <form id="batchForm" class="row">
+            <label class="grow">生成数量<input id="batchCount" type="number" min="1" max="500" value="20" required></label>
+            <button class="btn primary" type="submit">批量创建</button>
+          </form>
+          <p class="muted">每个地址为12位小写字母数字，并同时包含字母和数字。</p>
+        </section>
+        <section class="panel">
+          <h2>自定义邮箱</h2>
+          <form id="customForm" class="row">
+            <label class="grow">本地名<input id="customLocalPart" maxlength="48" placeholder="support" required></label>
+            <button class="btn primary" type="submit">创建地址</button>
+          </form>
+          <p class="muted">支持字母、数字、点、下划线、加号和短横线。</p>
+        </section>
+      </div>
+
+      <section id="issuedPanel" class="panel section hidden">
+        <div class="section-head"><div><h2>刚生成的专属链接</h2><div class="muted">访问码只显示这一次，请立即导出。</div></div><div class="row"><button class="btn small" data-export="txt">TXT</button><button class="btn small" data-export="json">JSON</button><button class="btn small" data-export="csv">CSV</button></div></div>
+        <textarea id="issuedText" readonly></textarea>
+      </section>
+
+      <section class="panel section">
+        <div class="section-head"><div><h2>邮箱列表</h2><div id="mailboxSummary" class="muted"></div></div><div class="row"><input id="mailboxSearch" placeholder="搜索邮箱" style="width:220px"><button id="refreshButton" class="btn small">刷新</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>域名</th><th>邮箱</th><th>状态</th><th>邮件</th><th>存储</th><th>最近收件</th><th>操作</th></tr></thead><tbody id="mailboxRows"></tbody></table></div>
+      </section>
+
+      <section class="panel section">
+        <div class="section-head"><div><h2>最近邮件</h2><div class="muted">管理员可查看全部邮箱内容；邮件不可删除。</div></div><button id="refreshMessages" class="btn small">刷新邮件</button></div>
+        <div class="table-wrap"><table><thead><tr><th>时间</th><th>收件人</th><th>发件人</th><th>主题</th><th>大小</th></tr></thead><tbody id="messageRows"></tbody></table></div>
+      </section>
+      <div id="adminFlash" class="flash"></div>
+    </section>
+  </main>
+
+  <dialog id="messageDialog"><div class="dialog-body"><div class="section-head"><h2 id="dialogSubject">邮件</h2><button id="closeDialog" class="btn small">关闭</button></div><div id="dialogMeta" class="muted"></div><div id="dialogAttachments" class="section"></div><div id="dialogContent" class="section"></div></div></dialog>
+  <script type="module" src="/assets/admin.js"></script>
+</body>
+</html>
